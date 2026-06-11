@@ -1,0 +1,133 @@
+# RAG Pipeline Configuration
+
+# Embedding Models Configuration
+embeddings:
+  default_model: "sentence-transformers/all-MiniLM-L6-v2"
+  models:
+    - name: "miniLM-L6-v2"
+      provider: "sentence_transformers"
+      model_id: "sentence-transformers/all-MiniLM-L6-v2"
+      dimension: 384
+      max_seq_length: 256
+      normalize: true
+      extra_config: {}
+    - name: "bge-base-en"
+      provider: "sentence_transformers"
+      model_id: "BAAI/bge-base-en-v1.5"
+      dimension: 768
+      max_seq_length: 512
+      normalize: true
+      extra_config: {}
+    - name: "e5-base"
+      provider: "sentence_transformers"
+      model_id: "intfloat/e5-base-v2"
+      dimension: 768
+      max_seq_length: 512
+      normalize: true
+      extra_config: {}
+    - name: "nomic-embed-text"
+      provider: "sentence_transformers"
+      model_id: "nomic-ai/nomic-embed-text-v1.5"
+      dimension: 768
+      max_seq_length: 8192
+      normalize: true
+      extra_config: {}
+
+# Chunking Configuration
+chunking:
+  default_strategy: "recursive"
+  strategies:
+    recursive:
+      chunk_size: 512
+      chunk_overlap: 50
+      separators: ["\n\n", "\n", ". ", " ", ""]
+    fixed:
+      chunk_size: 512
+      chunk_overlap: 50
+    semantic:
+      model: "sentence-transformers/all-MiniLM-L6-v2"
+      threshold: 0.5
+      min_chunk_size: 100
+      max_chunk_size: 1000
+
+# Vector Storage Configuration
+storage:
+  index_path: "./data/index.bin"
+  metadata_path: "./data/chunks.jsonl"
+  mmap_enabled: true
+  normalize_vectors: true
+
+# Index Configuration
+indexing:
+  default_index: "hnsw"
+  indices:
+    brute_force:
+      enabled: true
+    ivf:
+      enabled: true
+      n_centroids: 4096
+      n_probe: 16
+      kmeans_iterations: 20
+    hnsw:
+      enabled: true
+      M: 16
+      ef_construction: 200
+      ef_search: 100
+      max_level: 16
+
+# Re-ranking Configuration
+reranking:
+  enabled: true
+  default_model: "ms-marco-MiniLM-L-6-v2"
+  models:
+    - name: "ms-marco-MiniLM-L-6-v2"
+      provider: "sentence_transformers"
+      model_id: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+      max_seq_length: 512
+      extra_config: {}
+    - name: "ms-marco-MiniLM-L-12-v2"
+      provider: "sentence_transformers"
+      model_id: "cross-encoder/ms-marco-MiniLM-L-12-v2"
+      max_seq_length: 512
+      extra_config: {}
+    - name: "bge-reranker-base"
+      provider: "sentence_transformers"
+      model_id: "BAAI/bge-reranker-base"
+      max_seq_length: 512
+      extra_config: {}
+  top_k: 100
+  final_k: 10
+
+# Generation Configuration
+generation:
+  default_strategy: "replug"
+  strategies:
+    replug:
+      prompt_template: |
+        {documents}
+        Question: {query}
+        Answer:
+    rag_sequence:
+      prompt_template: |
+        Context: {documents}
+        Question: {query}
+        Answer:
+    fid:
+      separate_encode: true
+      max_passages: 20
+
+# LLM Configuration (for generation)
+llm:
+  provider: "vllm"  # or "openai", "anthropic", "ollama"
+  model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+  base_url: "http://localhost:8000/v1"
+  api_key: "EMPTY"
+  max_tokens: 512
+  temperature: 0.1
+
+# Pipeline Configuration
+pipeline:
+  default_top_k: 10
+  default_rerank: true
+  cache_embeddings: true
+  batch_size: 32

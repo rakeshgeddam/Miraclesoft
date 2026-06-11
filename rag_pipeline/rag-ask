@@ -1,0 +1,24 @@
+#!/bin/bash
+# rag-ask — one-word query command for the RAG pipeline
+# Usage:  rag-ask "What is the architecture?"
+#         rag-ask --no-gen "Just show me passages"
+
+RAG_DIR="/Users/rakeshgeddam/Documents/Miraclesoft/rag_pipeline"
+cd "$RAG_DIR" || { echo "RAG_DIR not found: $RAG_DIR"; exit 1; }
+source .venv311/bin/activate 2>/dev/null || {
+    echo "Virtual env not found at .venv311 — run in RAG_DIR or check setup"
+    exit 1
+}
+
+# Pick up any flags before the query (like --no-gen, --top-k)
+FLAGS=()
+QUERY=()
+for arg in "$@"; do
+    if [[ "$arg" == --* ]]; then
+        FLAGS+=("$arg")
+    else
+        QUERY+=("$arg")
+    fi
+done
+
+python scripts/rag_cli.py query "${FLAGS[@]}" "${QUERY[@]}" --no-gen

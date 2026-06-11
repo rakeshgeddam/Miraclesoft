@@ -1,0 +1,1 @@
+"""Shared tool utilities for weather fetching and email."""

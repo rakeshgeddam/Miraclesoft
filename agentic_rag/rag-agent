@@ -1,0 +1,7 @@
+#!/bin/bash
+# rag-agent — Agentic RAG from anywhere (single command)
+# Usage:  rag-agent "What is the architecture?"
+#         rag-agent --verbose "How does auth work?"
+
+cd /Users/rakeshgeddam/Documents/Miraclesoft/agentic_rag || exit 1
+/usr/local/bin/python3 run.py "$@"
